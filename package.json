@@ -1,0 +1,11 @@
+{
+  "name": "robo-kitchen",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
