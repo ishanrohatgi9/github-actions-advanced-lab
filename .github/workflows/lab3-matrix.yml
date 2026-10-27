@@ -1,0 +1,64 @@
+name: Lab 3 - Matrix Strategy
+
+on:
+  workflow_dispatch:
+    inputs:
+      break_node22:
+        description: 'Make every Node 22 job fail? (fail-fast demo)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} with Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22, 24]
+        exclude:
+          - os: windows-latest
+            node: 24
+
+    steps:
+      - name: Show the matrix values of this runner
+        shell: bash
+        run: |
+          echo "OS from matrix   : ${{ matrix.os }}"
+          echo "Node from matrix : ${{ matrix.node }}"
+          echo "Runner OS        : $RUNNER_OS"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Check versions
+        shell: bash
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Pretend there is a bug in Node 22
+        shell: bash
+        run: |
+          if [ "${{ inputs.break_node22 }}" = "true" ] && [ "${{ matrix.node }}" = "22" ]; then
+            echo "Simulated failure on Node 22"
+            exit 1
+          fi
+          echo "No bug found"
+
+      - name: Wait a little so you can see parallel runs
+        shell: bash
+        run: sleep 15
